@@ -13,5 +13,12 @@ new Vue({
   el: '#app',
   router,
   components: { App },
-  template: '<App/>'
+  template: '<App/>',
+  directives: {
+    focus: {
+      update(el, { value }) {
+        el.focus();
+      }
+    }
+  }
 });

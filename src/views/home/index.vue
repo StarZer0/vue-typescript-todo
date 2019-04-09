@@ -2,23 +2,27 @@
   <div class="home">
     <div class="header">
       <form>
-        <div class="form-group" :class="{'has-error': false}">
+        <div class="form-group" :class="{'has-error': hasNoText}">
           <label for="input" class="input-label pull-left">事项:</label>
-          <span class="btn btn-primary pull-right">添加</span>
+          <span class="btn btn-primary pull-right" @click="addHandle">添加</span>
           <div class="input">
-            <input type="text" class="form-control" id="input">
+            <input ref="input" type="text" class="form-control" id="input" v-model="inputText" autofocus @focus="focusHandle">
           </div>
         </div>
       </form>
     </div>
     <section class="articles">
-      <ul>
-        <li class="article">
-          <p>JavaScript高级程序设计</p>
+      <ul @click="clickHandle">
+        <li class="article todo" v-for="(item, index) in articles" :key="index + 'todo'">
+          <span class="btn btn-success pull-right" operate="1" :index="index">完成</span>
+          <span class="btn btn-danger pull-right" operate="0" :index="index">删除</span>
+          <p>{{item}}</p>
+        </li>
+        <li class="article success" v-for="(item, index) in success" :key="index + 'success'">
+          <p>{{item}}</p>
         </li>
       </ul>
     </section>
-    <div class="footer"></div>
   </div>
 </template>
 
@@ -26,7 +30,42 @@
 import Vue from "vue";
 import Component from "vue-class-component";
 @Component
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  articles: string[] = [];
+  success: string[] = [];
+  inputText: string = "";
+  hasNoText: boolean = false;
+  timer: number;
+
+  clickHandle(e) {
+    const target = e.target;
+    let operate = target.getAttribute("operate");
+    if (operate === undefined || operate === null) return;
+
+    let index = parseInt(target.getAttribute("index"));
+    let article = this.articles.splice(index, 1)[0];
+    if (operate === "1") {
+      this.success.push(article);
+    }
+  }
+
+  addHandle() {
+    if (this.inputText.trim() === "") {
+      this.hasNoText = true;
+      this.timer = setTimeout(() => {
+        this.hasNoText = false;
+      }, 3000);
+      return;
+    }
+    this.articles.push(this.inputText);
+    this.inputText = "";
+  }
+
+  focusHandle() {
+    if (this.timer) clearTimeout(this.timer);
+    this.hasNoText = false;
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -50,9 +89,8 @@ export default class Home extends Vue {}
   }
 }
 .articles {
-  height: 300px;
+  min-height: 300px;
   border-top: 1px solid #ccc;
-  border-bottom: 1px solid #ccc;
   ul {
     padding: 0;
   }
@@ -60,12 +98,22 @@ export default class Home extends Vue {}
     list-style: none;
     text-align: left;
     line-height: 30px;
-    margin: 10px 10px 10px 40px;
+    margin: 10px;
     border-bottom: 1px solid #ccc;
+    .btn {
+      margin-left: 10px;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+    &:hover {
+      .btn {
+        opacity: 1;
+      }
+    }
+    &.success {
+      color: #ccc;
+    }
   }
-}
-.footer {
-  height: 100px;
 }
 </style>
 
